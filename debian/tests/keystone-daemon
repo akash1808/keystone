@@ -1,0 +1,16 @@
+#!/bin/bash
+#------------------------
+# Testing keystone-daemon
+#------------------------
+set -e
+
+DAEMONS=('keystone-all')
+
+service keystone restart > /dev/null
+sleep 5
+if pidof -x keystone-all > /dev/null; then
+    echo "OK"
+else
+    echo "ERROR: ${daemon} IS NOT RUNNING"
+    exit 1
+fi

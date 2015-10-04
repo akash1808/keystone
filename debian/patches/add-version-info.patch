@@ -1,0 +1,57 @@
+Description: Add version info for Ubuntu.
+Author: Yolanda Robla <yolanda.robla@canonical.com>
+Forwarded: Not-needed
+diff --git a/etc/keystone.conf.sample b/etc/keystone.conf.sample
+index 1c2298b..2a7d2d7 100644
+--- a/etc/keystone.conf.sample
++++ b/etc/keystone.conf.sample
+@@ -1731,3 +1731,7 @@
+ 
+ # Trust backend driver. (string value)
+ #driver = keystone.trust.backends.sql.Trust
++
++
++[extra_headers]
++Distribution = Ubuntu
+diff --git a/keystone/common/config.py b/keystone/common/config.py
+index ebc1c2f..312e6e7 100644
+--- a/keystone/common/config.py
++++ b/keystone/common/config.py
+@@ -12,6 +12,8 @@
+ # License for the specific language governing permissions and limitations
+ # under the License.
+ 
++import platform
++
+ from oslo_config import cfg
+ import oslo_messaging
+ 
+@@ -1073,6 +1075,9 @@ FILE_OPTIONS = {
+                     deprecated_for_removal=True,
+                     help='Require client certificate.'),
+     ],
++    'extra_headers': [
++        cfg.StrOpt('Distribution', default=platform.dist()[0]),
++    ],
+ }
+ 
+ 
+diff --git a/keystone/common/wsgi.py b/keystone/common/wsgi.py
+index bbe3fc1..be08bb5 100644
+--- a/keystone/common/wsgi.py
++++ b/keystone/common/wsgi.py
+@@ -746,6 +746,11 @@ def render_response(body=None, status=None, headers=None, method=None):
+         headers = list(headers)
+     headers.append(('Vary', 'X-Auth-Token'))
+ 
++    # extra headers
++    for key, value in CONF.extra_headers.items():
++        if value != 'None':
++            headers.append(('X-'+key, value))
++
+     if body is None:
+         body = ''
+         status = status or (204, 'No Content')
+-- 
+2.1.4
+
